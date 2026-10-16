@@ -1,0 +1,53 @@
+version: "3.9"
+
+networks:
+  LicensesNet:
+    driver: bridge
+
+services:
+  postgresServerDb:
+    image: postgres:18.1
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5001:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${VOLUME_POSTGRES}
+    networks:
+      - LicensesNet
+      
+  api:
+    # build: .
+    image: utereskovi/licenses-api:latest
+    container_name: licenses
+    volumes:
+      - /data/licenses/images:/app/images
+    environment:
+      - TZ=Europe/Kiev
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresServerDb:5432/${POSTGRES_DB}
+    ports:
+      - "5891:8000"
+    depends_on:
+      - postgresServerDb
+    networks:
+      - LicensesNet
+
+  front-user:
+    image: utereskovi/licenses-user-react:latest
+    container_name: licenses_user_front
+    ports:
+      - "3982:80"
+    networks:
+      - LicensesNet
+
+  front-admin:
+    image: utereskovi/licenses-admin-react:latest
+    container_name: licenses_admin_front
+    ports:
+      - "3981:80"
+    networks:
+      - LicensesNet
