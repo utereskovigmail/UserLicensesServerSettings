@@ -24,6 +24,7 @@ services:
     # build: .
     image: utereskovi/licenses-api:latest
     container_name: licenses
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     volumes:
       - /data/licenses/images:/app/images
     environment:
